@@ -2,7 +2,7 @@ package tera
 
 import (
 	"fmt"
-	"tera"
+	"github.com/opera/terago"
 	"testing"
 )
 
