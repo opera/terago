@@ -59,7 +59,7 @@ func (t *Table) Close() {
 }
 
 // ttl(time-to-live)
-// Key-value will expired after <ttl> seconds. 0 means never expired.
+// Key-value will expired after <ttl> seconds. -1 means never expired.
 func (t *Table) PutKV(key, value string, ttl int) (err error) {
 	if t.CTable == nil {
 		return errors.New("table not open: " + t.Name)
