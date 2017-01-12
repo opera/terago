@@ -2,13 +2,12 @@ package tera
 
 import (
 	"fmt"
-	"github.com/opera/terago"
 	"testing"
 )
 
 func TestTera(*testing.T) {
 	fmt.Println("Hello terago!")
-	client, c_err := tera.NewClient("./tera.flag", "terago")
+	client, c_err := NewClient("./tera.flag", "terago")
 	defer client.Close()
 	if c_err != nil {
 		panic("tera.NewClient error: " + c_err.Error())
@@ -26,15 +25,15 @@ func TestTera(*testing.T) {
 	}
 
 	// get an exist key value, return value
-	value, g_err := table.GetKV("hello")
-	if g_err != nil {
+	value, found, g_err := table.GetKV("hello")
+	if !found || g_err != nil {
 		panic("get key value error: " + g_err.Error())
 	}
 	fmt.Printf("get key[%s] value[%s].\n", "hello", value)
 
 	// get a not-exist key value, return "not found"
-	value, g_err = table.GetKV("hell")
-	if g_err == nil {
+	value, found, g_err = table.GetKV("hell")
+	if found || g_err != nil {
 		panic("get key value should fail: " + g_err.Error())
 	}
 
@@ -43,8 +42,8 @@ func TestTera(*testing.T) {
 		panic("delete key value error: " + g_err.Error())
 	}
 
-	value, g_err = table.GetKV("hello")
-	if g_err == nil {
+	value, found, g_err = table.GetKV("hello")
+	if found || g_err != nil {
 		panic("get key value should fail: " + g_err.Error())
 	}
 }
