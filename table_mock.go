@@ -3,6 +3,7 @@
 package tera
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -21,8 +22,12 @@ func (t *Table) PutKV(key, value string, ttl int) (err error) {
 	return nil
 }
 
-func (t *Table) GetKV(key string) (value string, found bool, err error) {
+func (t *Table) GetKV(key string) (value string, err error) {
+	var found bool
 	value, found = t.Data[key]
+	if !found {
+		err = errors.New("NotExist")
+	}
 	return
 }
 

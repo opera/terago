@@ -25,15 +25,15 @@ func TestTera(*testing.T) {
 	}
 
 	// get an exist key value, return value
-	value, found, g_err := table.GetKV("hello")
-	if !found || g_err != nil {
+	value, g_err := table.GetKV("hello")
+	if g_err != nil {
 		panic("get key value error: " + g_err.Error())
 	}
 	fmt.Printf("get key[%s] value[%s].\n", "hello", value)
 
 	// get a not-exist key value, return "not found"
-	value, found, g_err = table.GetKV("hell")
-	if found || g_err != nil {
+	value, g_err = table.GetKV("hell")
+	if g_err == nil {
 		panic("get key value should fail: " + g_err.Error())
 	}
 
@@ -42,8 +42,8 @@ func TestTera(*testing.T) {
 		panic("delete key value error: " + g_err.Error())
 	}
 
-	value, found, g_err = table.GetKV("hello")
-	if found || g_err != nil {
+	value, g_err = table.GetKV("hello")
+	if g_err == nil {
 		panic("get key value should fail: " + g_err.Error())
 	}
 }
