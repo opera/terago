@@ -3,8 +3,8 @@ go client for [baidu/tera](https://github.com/baidu/tera)
 
 ## Run test
 
- * If there is a tera environment(sdk & server), run `go test --tags prod`
- * Else run `go test --mock`
+ * If there is a tera environment(sdk & server), run `go test -tags prod`
+ * Else run `go test -tags mock`
 
 ## Prepare
 
