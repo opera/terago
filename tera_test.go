@@ -13,17 +13,21 @@ func logExecTime(start time.Time, prefix string) {
 
 func TestTera(*testing.T) {
 	fmt.Println("Hello terago!")
+	start := time.Now()
 	client, c_err := NewClient("./tera.flag", "terago")
 	defer client.Close()
 	if c_err != nil {
 		panic("tera.NewClient error: " + c_err.Error())
 	}
+	logExecTime(start, "NewClient")
 
+	start = time.Now()
 	table, t_err := client.OpenTable("terago")
 	defer table.Close()
 	if t_err != nil {
 		panic("tera.OpenTable error: " + t_err.Error())
 	}
+	logExecTime(start, "OpenTable")
 
 	{
 		defer logExecTime(time.Now(), "PutKV")
