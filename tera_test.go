@@ -33,25 +33,34 @@ func TestTera(*testing.T) {
 		}
 	}
 
-	// get an exist key value, return value
-	value, g_err := table.GetKV("hello")
-	if g_err != nil {
-		panic("get key value error: " + g_err.Error())
-	}
-	fmt.Printf("get key[%s] value[%s].\n", "hello", value)
-
-	// get a not-exist key value, return "not found"
-	value, g_err = table.GetKV("hell")
-	if g_err == nil {
-		panic("get key value should fail: " + g_err.Error())
+	{
+		defer logExecTime(time.Now(), "GetKV")
+		// get an exist key value, return value
+		value, g_err := table.GetKV("hello")
+		if g_err != nil {
+			panic("get key value error: " + g_err.Error())
+		}
+		fmt.Printf("get key[%s] value[%s].\n", "hello", value)
 	}
 
-	d_err := table.DeleteKV("hello")
-	if d_err != nil {
-		panic("delete key value error: " + g_err.Error())
+	{
+		defer logExecTime(time.Now(), "GetKV_NotExist")
+		// get a not-exist key value, return "not found"
+		_, g_err := table.GetKV("hell")
+		if g_err == nil {
+			panic("get key value should fail: " + g_err.Error())
+		}
 	}
 
-	value, g_err = table.GetKV("hello")
+	{
+		defer logExecTime(time.Now(), "DeleteKV")
+		d_err := table.DeleteKV("hello")
+		if d_err != nil {
+			panic("delete key value error: " + d_err.Error())
+		}
+	}
+
+	_, g_err := table.GetKV("hello")
 	if g_err == nil {
 		panic("get key value should fail: " + g_err.Error())
 	}
