@@ -3,7 +3,13 @@ package tera
 import (
 	"fmt"
 	"testing"
+	"time"
 )
+
+func logExecTime(start time.Time, prefix string) {
+	elapsed_ms := time.Since(start) / time.Millisecond
+	fmt.Printf("Performance: %s cost %d ms.\n", prefix, elapsed_ms)
+}
 
 func TestTera(*testing.T) {
 	fmt.Println("Hello terago!")
@@ -19,9 +25,12 @@ func TestTera(*testing.T) {
 		panic("tera.OpenTable error: " + t_err.Error())
 	}
 
-	p_err := table.PutKV("hello", "terago", 10)
-	if p_err != nil {
-		panic("put key value error: " + p_err.Error())
+	{
+		defer logExecTime(time.Now(), "PutKV")
+		p_err := table.PutKV("hello", "terago", 10)
+		if p_err != nil {
+			panic("put key value error: " + p_err.Error())
+		}
 	}
 
 	// get an exist key value, return value
