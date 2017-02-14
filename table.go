@@ -18,6 +18,21 @@ bool table_put_kv_sync(tera_table_t* table, const char* key, int keylen,
 	return ret;
 }
 
+void put_callback(void* mu) {
+  int64_t err = tera_row_mutation_get_status_code((tera_row_mutation_t*)mu);
+	if (err != 0) {
+		fprintf(stderr, "tera put kv error: %d.\n", (int)err);
+	}
+}
+void table_put_kv_async(tera_table_t* table, const char* key, int keylen,
+                        const char* value, int vallen, int ttl) {
+	char* err = NULL;
+  tera_row_mutation_t* mu = tera_row_mutation(table, key, keylen);
+  tera_row_mutation_put_kv(mu, value, vallen, ttl);
+  tera_row_mutation_set_callback(mu, put_callback);
+  tera_table_apply_mutation(table, mu);
+}
+
 char* table_get_kv_sync(tera_table_t* table, const char* key, int keylen, int* vallen) {
 	uint64_t vlen = 0;
 	char* err = NULL;
@@ -71,6 +86,17 @@ func (t *Table) PutKV(key, value string, ttl int) (err error) {
 	if !ret {
 		err = errors.New("put kv error")
 	}
+	return
+}
+
+// Async put key-value into tera. Return success immediately and run put operation at background.
+// Caution: If put failed, specify kv would be dump to error log.
+func (t *Table) PutKVAsync(key, value string, ttl int) (err error) {
+	if t.CTable == nil {
+		return errors.New("table not open: " + t.Name)
+	}
+	C.table_put_kv_async(t.CTable, C.CString(key), C.int(len(key)),
+		C.CString(value), C.int(len(value)), C.int(ttl))
 	return
 }
 
