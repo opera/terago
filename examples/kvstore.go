@@ -10,7 +10,7 @@ func main() {
 
 	// New a tera client
 	// One client support multiple tables
-	client, c_err := tera.NewClient("tera.flag", "terago")
+	client, c_err := terago.NewClient("tera.flag", "terago")
 	defer client.Close() // Donot forget
 	if c_err != nil {
 		panic("tera.NewClient error: " + c_err.Error())

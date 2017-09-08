@@ -1,6 +1,6 @@
 // +build prod
 
-package tera
+package terago
 
 /*
 #cgo LDFLAGS: -ltera_c

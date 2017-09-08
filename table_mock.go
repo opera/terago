@@ -1,6 +1,6 @@
 // +build mock
 
-package tera
+package terago
 
 import (
 	"errors"
