@@ -38,24 +38,29 @@ type Client struct {
 	CClient  *C.tera_client_t
 }
 
-func NewClient(conf_path, log_prefix string) (client Client, err error) {
+func NewClient(conf_path, log_prefix string) (client ClientI, err error) {
 	fmt.Println("new client")
-	client.CClient = C.client_open(C.CString(conf_path), C.CString(log_prefix))
-	client.ConfPath = conf_path
-	if client.CClient == nil {
-		err = errors.New("Fail to create tera client")
+	c := Client{
+		CClient:  C.client_open(C.CString(conf_path), C.CString(log_prefix)),
+		ConfPath: conf_path,
 	}
+	if c.CClient == nil {
+		err = errors.New("Fail to create tera client")
+	} else {
+		client = c
+	}
+
 	return
 }
 
-func (c *Client) Close() {
+func (c Client) Close() {
 	fmt.Println("close client")
 	if c.CClient != nil {
 		C.tera_client_close(c.CClient)
 	}
 }
 
-func (c *Client) OpenTable(table_name string) (table Table, err error) {
+func (c Client) OpenTable(table_name string) (table TableI, err error) {
 	fmt.Println("open table: " + table_name)
 	if c.CClient == nil {
 		err = errors.New("Fail to open table, client not available.")

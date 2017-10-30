@@ -68,7 +68,7 @@ type Table struct {
 	CTable *C.tera_table_t
 }
 
-func (t *Table) Close() {
+func (t Table) Close() {
 	fmt.Println("close table: " + t.Name)
 	if t.CTable != nil {
 		C.tera_table_close(t.CTable)
@@ -77,7 +77,7 @@ func (t *Table) Close() {
 
 // ttl(time-to-live)
 // Key-value will expired after <ttl> seconds. -1 means never expired.
-func (t *Table) PutKV(key, value string, ttl int) (err error) {
+func (t Table) PutKV(key, value string, ttl int) (err error) {
 	if t.CTable == nil {
 		return errors.New("table not open: " + t.Name)
 	}
@@ -91,7 +91,7 @@ func (t *Table) PutKV(key, value string, ttl int) (err error) {
 
 // Async put key-value into tera. Return success immediately and run put operation at background.
 // Caution: If put failed, specify kv would be dump to error log.
-func (t *Table) PutKVAsync(key, value string, ttl int) (err error) {
+func (t Table) PutKVAsync(key, value string, ttl int) (err error) {
 	if t.CTable == nil {
 		return errors.New("table not open: " + t.Name)
 	}
@@ -100,7 +100,7 @@ func (t *Table) PutKVAsync(key, value string, ttl int) (err error) {
 	return
 }
 
-func (t *Table) GetKV(key string) (value string, err error) {
+func (t Table) GetKV(key string) (value string, err error) {
 	if t.CTable == nil {
 		err = errors.New("table not open: " + t.Name)
 		return
@@ -117,7 +117,7 @@ func (t *Table) GetKV(key string) (value string, err error) {
 	return
 }
 
-func (t *Table) DeleteKV(key string) (err error) {
+func (t Table) DeleteKV(key string) (err error) {
 	if t.CTable == nil {
 		return errors.New("table not open: " + t.Name)
 	}
