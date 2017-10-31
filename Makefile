@@ -7,17 +7,14 @@ all: clean $(PROGRAMS) $(EXAMPLES) $(PLUGINS)
 
 test: check
 
-kvstore_example:
-	go build -tags $(TAGS) -o kvstore_example examples/kvstore.go
-
 plugin_example:
-	go build -tags $(TAGS) -o plugin_example examples/plugin.go
+	go build -o plugin_example examples/plugin.go
 
 terago.so:
-	go build -buildmode plugin -tags $(TAGS) plugin/terago.go
+	go build -buildmode plugin plugin/terago.go
 
 check:
-	go test -tags $(TAGS)
+	go test -v plugin_test.go interface.go
 
 clean:
 	@rm -rf $(PROGRAMS) $(EXAMPLES) $(PLUGINS)
