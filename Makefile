@@ -1,6 +1,6 @@
 TAGS = mock # mock | prod
 PROGRAMS = 
-EXAMPLES = kvstore_example plugin_example
+EXAMPLES = plugin_example
 PLUGINS = terago.so
 
 all: clean $(PROGRAMS) $(EXAMPLES) $(PLUGINS)

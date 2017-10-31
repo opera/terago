@@ -19,9 +19,3 @@ func NewClient(conf_path, log_prefix string) (client ClientI, err error) {
 func (c Client) Close() {
 	fmt.Println("close mock client")
 }
-
-func (c Client) OpenTable(table_name string) (table TableI, err error) {
-	fmt.Println("open mock table: " + table_name)
-	table = Table{Name: table_name, Data: make(map[string]string)}
-	return
-}

@@ -4,7 +4,7 @@ import ()
 
 type ClientI interface {
 	Close()
-	OpenTable(table_name string) (table TableI, err error)
+	//	OpenTable(table_name string) (table TableI, err error)
 }
 
 type TableI interface {

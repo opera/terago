@@ -21,32 +21,10 @@ func Test(*testing.T) {
 	}
 
 	NewClient := h.(func(string, string) (ClientI, error))
-	c, err := NewClient("./tera.flag", "terago_plugin")
+	client, err := NewClient("./tera.flag", "terago_plugin")
 	if err != nil {
 		fmt.Printf("plugin NewClient: %s\n", err)
 	}
-	fmt.Printf("efin %v\n", reflect.TypeOf(c))
-	client := c.(ClientI)
+	fmt.Printf("%v\n", reflect.TypeOf(client))
 	defer client.Close()
-
-	table, err := client.OpenTable("plugin")
-	if err != nil {
-		fmt.Printf("plugin OpenTable: %s\n", err)
-	}
-	defer table.Close()
-
-	{
-		err := table.PutKV("hello", "terago", 10)
-		if err != nil {
-			panic("put key value error: " + err.Error())
-		}
-	}
-
-	{
-		value, err := table.GetKV("hello")
-		if err != nil {
-			panic("get key value error: " + err.Error())
-		}
-		fmt.Printf("GetKV: hello:%s.\n", value)
-	}
 }
