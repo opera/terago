@@ -4,7 +4,7 @@ package terago
 
 /*
 #cgo LDFLAGS: -ltera_c
-#include "c/table.h"
+#include "c/kvstore.h"
 */
 import "C"
 import (
