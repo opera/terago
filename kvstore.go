@@ -10,6 +10,7 @@ import "C"
 import (
 	"errors"
 	"fmt"
+	"sync"
 	"unsafe"
 )
 
@@ -68,10 +69,67 @@ func (p KvStore) Get(key string) (value string, err error) {
 }
 
 func (p KvStore) BatchPut(kvs []KeyValue) (err error) {
-	return nil
+	wg := sync.WaitGroup{}
+	wg.Add(len(kvs))
+	succ := true
+	for _, kvt := range kvs {
+		kv := kvt
+		go func() {
+			if kv.TTL == 0 {
+				kv.TTL = -1
+			}
+			kv.Err = p.Put(kv.Key, kv.Value, kv.TTL)
+			if kv.Err != nil {
+				succ = false
+			}
+			fmt.Printf("BatchPut: put %s successfully\n", kv.Key)
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	if succ {
+		return nil
+	} else {
+		return errors.New("error")
+	}
 }
 
 func (p KvStore) BatchGet(keys []string) (result []KeyValue, err error) {
+	wg := sync.WaitGroup{}
+	wg.Add(len(keys))
+	succ := true
+	c := make(chan *KeyValue, len(keys))
+	for _, kt := range keys {
+		k := kt
+		go func() {
+			value, e := p.Get(k)
+			if err != nil {
+				c <- &KeyValue{Key: k, Err: e}
+				succ = false
+			} else {
+				c <- &KeyValue{Key: k, Value: value}
+			}
+			fmt.Printf("BatchGet: get %s successfully\n", k)
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	close(c)
+	m := make(map[string]*KeyValue)
+	for kv := range c {
+		m[kv.Key] = kv
+	}
+	if len(m) != len(keys) {
+		panic(m)
+	}
+	for _, k := range keys {
+		result = append(result, *m[k])
+	}
+	if succ {
+		return result, nil
+	} else {
+		return result, errors.New("error")
+	}
 	return
 }
 
