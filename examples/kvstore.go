@@ -25,25 +25,25 @@ func main() {
 	}
 
 	// Put a key-value synchronously.
-	p_err := kv.PutKV("hello", "terago", 10)
+	p_err := kv.Put("hello", "terago", 10)
 	if p_err != nil {
 		panic("put key value error: " + p_err.Error())
 	}
 
-	p_err = kv.PutKVAsync("helloasync", "terago", 10)
+	p_err = kv.PutAsync("helloasync", "terago", 10)
 	if p_err != nil {
 		panic("put key value async error: " + p_err.Error())
 	}
 
 	// Get a key-value synchronously.
-	value, g_err := kv.GetKV("hello")
+	value, g_err := kv.Get("hello")
 	if g_err != nil {
 		panic("get key value error: " + g_err.Error())
 	}
-	fmt.Printf("GetKV: hello:%s.\n", value)
+	fmt.Printf("Get: hello:%s.\n", value)
 
 	// Delete a key-value synchronously.
-	d_err := kv.DeleteKV("hello")
+	d_err := kv.Delete("hello")
 	if d_err != nil {
 		panic("delete key value error: " + d_err.Error())
 	}

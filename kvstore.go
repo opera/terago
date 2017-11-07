@@ -67,15 +67,15 @@ func (p KvStore) Get(key string) (value string, err error) {
 	return
 }
 
-func (p KvStore) BatchPut(keys, values []string) (errs []error) {
+func (p KvStore) BatchPut(kvs []KeyValue) (err error) {
+	return nil
+}
+
+func (p KvStore) BatchGet(keys []string) (result []KeyValue, err error) {
 	return
 }
 
-func (p KvStore) BatchGet(keys []string) (values []string, errs []error) {
-	return
-}
-
-func (p KvStore) RangeGet(start, end string, maxNum int) (keys, values []string, err error) {
+func (p KvStore) RangeGet(start, end string, maxNum int) (result []KeyValue, err error) {
 	return
 }
 
