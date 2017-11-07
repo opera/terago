@@ -82,7 +82,6 @@ func (p KvStore) BatchPut(kvs []KeyValue) (err error) {
 			if kv.Err != nil {
 				succ = false
 			}
-			fmt.Printf("BatchPut: put %s successfully\n", kv.Key)
 			wg.Done()
 		}()
 	}
@@ -109,7 +108,6 @@ func (p KvStore) BatchGet(keys []string) (result []KeyValue, err error) {
 			} else {
 				c <- &KeyValue{Key: k, Value: value}
 			}
-			fmt.Printf("BatchGet: get %s successfully\n", k)
 			wg.Done()
 		}()
 	}
@@ -134,6 +132,23 @@ func (p KvStore) BatchGet(keys []string) (result []KeyValue, err error) {
 }
 
 func (p KvStore) RangeGet(start, end string, maxNum int) (result []KeyValue, err error) {
+	scanner := C.table_create_scanner(
+		p.CTable, C.CString(start), C.int(len(start)), C.CString(end), C.int(len(end)))
+	for i := 0; i < maxNum; i++ {
+		if C.tera_result_stream_done(scanner, nil) {
+			break
+		}
+		var keylen, vallen C.int
+		keyPtr := C.scanner_key(scanner, (*C.int)(&keylen))
+		key := C.GoStringN(keyPtr, keylen)
+		C.free(unsafe.Pointer(keyPtr))
+		valPtr := C.scanner_value(scanner, (*C.int)(&vallen))
+		value := C.GoStringN(valPtr, vallen)
+		C.free(unsafe.Pointer(valPtr))
+		C.tera_result_stream_next(scanner)
+
+		result = append(result, KeyValue{Key: key, Value: value})
+	}
 	return
 }
 

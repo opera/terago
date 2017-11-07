@@ -51,3 +51,25 @@ bool table_delete_kv_sync(tera_table_t* table, const char* key, int keylen) {
     return ret;
 }
 
+tera_result_stream_t* table_create_scanner(tera_table_t* table, const char* start, int startlen, 
+                                           const char* end, int endlen) {
+    tera_scan_descriptor_t* desc = tera_scan_descriptor(start, startlen);
+    tera_scan_descriptor_set_end(desc, end, endlen);
+    return tera_table_scan(table, desc, NULL);
+}
+
+char* scanner_key(tera_result_stream_t* stream, int* keylen) {
+    uint64_t len = 0;
+    char* key;
+    tera_result_stream_row_name(stream, &key, &len);
+    *keylen = (int)len;
+    return key;
+}
+
+char* scanner_value(tera_result_stream_t* stream, int* vallen) {
+    uint64_t len = 0;
+    char* value;
+    tera_result_stream_value(stream, &value, &len);
+    *vallen = (int)len;
+    return value;
+}
