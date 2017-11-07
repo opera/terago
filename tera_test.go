@@ -25,9 +25,9 @@ func TestTera(*testing.T) {
 	kv, t_err := client.OpenKvStore("terago")
 	defer kv.Close()
 	if t_err != nil {
-		panic("tera.OpenTable error: " + t_err.Error())
+		panic("tera.OpenKvStore error: " + t_err.Error())
 	}
-	logExecTime(start, "OpenTable")
+	logExecTime(start, "OpenKvStore")
 
 	start = time.Now()
 	p_err := kv.Put("hello", "terago", 10)
@@ -71,4 +71,69 @@ func TestTera(*testing.T) {
 	if g_err == nil {
 		panic("get key value should fail: " + g_err.Error())
 	}
+}
+
+func TestTeraBatch(*testing.T) {
+	fmt.Println("Hello terago batch!")
+	start := time.Now()
+	client, err := NewClient("tera.flag", "terago")
+	defer client.Close()
+	if err != nil {
+		panic("tera.NewClient error: " + err.Error())
+	}
+	logExecTime(start, "NewClient")
+
+	start = time.Now()
+	kv, err := client.OpenKvStore("terago")
+	defer kv.Close()
+	if err != nil {
+		panic("tera.OpenKvStore error: " + err.Error())
+	}
+	logExecTime(start, "OpenKvStore")
+
+	keys := []string{"t", "e", "r", "a", "go"}
+	values := []string{"tt", "ee", "rr", "aa", "gogo"}
+	start = time.Now()
+	var kvs []KeyValue
+	for i, k := range keys {
+		kvs = append(kvs, KeyValue{Key: k, Value: values[i], TTL: 10})
+	}
+	err = kv.BatchPut(kvs)
+	if err != nil {
+		panic("BatchPut error: " + err.Error())
+	}
+	logExecTime(start, "BatchPut")
+
+	start = time.Now()
+	// get an exist key value, return value
+	kvs, err = kv.BatchGet(keys)
+	if err != nil {
+		panic("BatchGet error: " + err.Error())
+	}
+	fmt.Printf("BatchGet KeyValues[%v]\n", kvs)
+	logExecTime(start, "BatchGet")
+
+	start = time.Now()
+	kvs, err = kv.RangeGet("a", "h", 10)
+	if err != nil {
+		panic("RangeGet error: " + err.Error())
+	}
+	fmt.Printf("RangeGet KeyValues[%v]\n", kvs)
+	if len(kvs) != 3 || kvs[0].Key != "a" || kvs[1].Key != "e" || kvs[2].Key != "go" {
+		e := fmt.Errorf("RangeGet err: %v", kvs)
+		panic(e)
+	}
+	logExecTime(start, "RangeGet")
+
+	start = time.Now()
+	kvs, err = kv.RangeGet("a", "h", 2)
+	if err != nil {
+		panic("RangeGet error: " + err.Error())
+	}
+	fmt.Printf("RangeGet2 KeyValues[%v]\n", kvs)
+	if len(kvs) != 2 || kvs[0].Key != "a" || kvs[1].Key != "e" {
+		e := fmt.Errorf("RangeGet2 err: %v", kvs)
+		panic(e)
+	}
+	logExecTime(start, "RangeGet2")
 }
