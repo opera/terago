@@ -30,44 +30,44 @@ func TestTera(*testing.T) {
 	logExecTime(start, "OpenTable")
 
 	start = time.Now()
-	p_err := kv.PutKV("hello", "terago", 10)
+	p_err := kv.Put("hello", "terago", 10)
 	if p_err != nil {
 		panic("put key value error: " + p_err.Error())
 	}
-	logExecTime(start, "PutKV")
+	logExecTime(start, "Put")
 
 	start = time.Now()
-	p_err = kv.PutKVAsync("helloasync", "terago", 10)
+	p_err = kv.PutAsync("helloasync", "terago", 10)
 	if p_err != nil {
 		panic("put key value async error: " + p_err.Error())
 	}
-	logExecTime(start, "PutKVAsync")
+	logExecTime(start, "PutAsync")
 
 	start = time.Now()
 	// get an exist key value, return value
-	value, g_err := kv.GetKV("hello")
+	value, g_err := kv.Get("hello")
 	if g_err != nil {
 		panic("get key value error: " + g_err.Error())
 	}
 	fmt.Printf("get key[%s] value[%s].\n", "hello", value)
-	logExecTime(start, "GetKV")
+	logExecTime(start, "Get")
 
 	start = time.Now()
 	// get a not-exist key value, return "not found"
-	_, g_err = kv.GetKV("hell")
+	_, g_err = kv.Get("hell")
 	if g_err == nil {
 		panic("get key value should fail: " + g_err.Error())
 	}
-	logExecTime(start, "GetKV_NotExist")
+	logExecTime(start, "Get_NotExist")
 
 	start = time.Now()
-	d_err := kv.DeleteKV("hello")
+	d_err := kv.Delete("hello")
 	if d_err != nil {
 		panic("delete key value error: " + d_err.Error())
 	}
-	logExecTime(start, "DeleteKV")
+	logExecTime(start, "Delete")
 
-	_, g_err = kv.GetKV("hello")
+	_, g_err = kv.Get("hello")
 	if g_err == nil {
 		panic("get key value should fail: " + g_err.Error())
 	}

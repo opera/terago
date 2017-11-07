@@ -17,17 +17,17 @@ func (p KvStore) Close() {
 }
 
 // discard ttl in mock table
-func (p KvStore) PutKV(key, value string, ttl int) (err error) {
+func (p KvStore) Put(key, value string, ttl int) (err error) {
 	p.Data[key] = value
 	return nil
 }
 
-func (p KvStore) PutKVAsync(key, value string, ttl int) (err error) {
+func (p KvStore) PutAsync(key, value string, ttl int) (err error) {
 	p.Data[key] = value
 	return nil
 }
 
-func (p KvStore) GetKV(key string) (value string, err error) {
+func (p KvStore) Get(key string) (value string, err error) {
 	var found bool
 	value, found = p.Data[key]
 	if !found {
@@ -36,7 +36,7 @@ func (p KvStore) GetKV(key string) (value string, err error) {
 	return
 }
 
-func (p KvStore) DeleteKV(key string) (err error) {
+func (p KvStore) Delete(key string) (err error) {
 	delete(p.Data, key)
 	return nil
 }

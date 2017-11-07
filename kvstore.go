@@ -27,7 +27,7 @@ func (p KvStore) Close() {
 
 // ttl(time-to-live)
 // Key-value will expired after <ttl> seconds. -1 means never expired.
-func (p KvStore) PutKV(key, value string, ttl int) (err error) {
+func (p KvStore) Put(key, value string, ttl int) (err error) {
 	if p.CTable == nil {
 		return errors.New("table not open: " + p.Name)
 	}
@@ -41,7 +41,7 @@ func (p KvStore) PutKV(key, value string, ttl int) (err error) {
 
 // Async put key-value into tera. Return success immediately and run put operation at background.
 // Caution: If put failed, specify kv would be dump to error log.
-func (p KvStore) PutKVAsync(key, value string, ttl int) (err error) {
+func (p KvStore) PutAsync(key, value string, ttl int) (err error) {
 	if p.CTable == nil {
 		return errors.New("table not open: " + p.Name)
 	}
@@ -50,7 +50,7 @@ func (p KvStore) PutKVAsync(key, value string, ttl int) (err error) {
 	return
 }
 
-func (p KvStore) GetKV(key string) (value string, err error) {
+func (p KvStore) Get(key string) (value string, err error) {
 	if p.CTable == nil {
 		err = errors.New("table not open: " + p.Name)
 		return
@@ -67,19 +67,19 @@ func (p KvStore) GetKV(key string) (value string, err error) {
 	return
 }
 
-func (p KvStore) BatchPutKV(keys, values []string) (errs []error) {
+func (p KvStore) BatchPut(keys, values []string) (errs []error) {
 	return
 }
 
-func (p KvStore) BatchGetKV(keys []string) (values []string, errs []error) {
+func (p KvStore) BatchGet(keys []string) (values []string, errs []error) {
 	return
 }
 
-func (p KvStore) RangeGetKV(start, end string, maxNum int) (keys, values []string, err error) {
+func (p KvStore) RangeGet(start, end string, maxNum int) (keys, values []string, err error) {
 	return
 }
 
-func (p KvStore) DeleteKV(key string) (err error) {
+func (p KvStore) Delete(key string) (err error) {
 	if p.CTable == nil {
 		return errors.New("table not open: " + p.Name)
 	}
