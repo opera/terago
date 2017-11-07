@@ -12,16 +12,18 @@ type Client struct {
 
 func NewClient(conf_path, log_prefix string) (client Client, err error) {
 	fmt.Println("new mock client")
-	client.ConfPath = conf_path
+	client = Client{
+		ConfPath: conf_path,
+	}
 	return
 }
 
-func (c *Client) Close() {
+func (c Client) Close() {
 	fmt.Println("close mock client")
 }
 
-func (c *Client) OpenTable(table_name string) (table Table, err error) {
-	fmt.Println("open mock table: " + table_name)
-	table = Table{Name: table_name, Data: make(map[string]string)}
+func (c Client) OpenKvStore(name string) (kv KvStore, err error) {
+	fmt.Println("open mock table: " + name)
+	kv = KvStore{Name: name, Data: make(map[string]string)}
 	return
 }
