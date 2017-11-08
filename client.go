@@ -45,6 +45,10 @@ func (c Client) OpenKvStore(name string) (kv KvStore, err error) {
 		return
 	}
 	c_table := C.table_open(c.CClient, C.CString(name))
+	if c_table == nil {
+		err = fmt.Errorf("Fail to open table %s", name)
+		return
+	}
 	kv = KvStore{Name: name, CTable: c_table}
 	return
 }

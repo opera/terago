@@ -18,6 +18,7 @@ tera_table_t* table_open(tera_client_t* client, const char* table_name) {
     if (err != NULL) {
         fprintf(stderr, "tera table open error: %s.\n", err);
         free(err);
+        return NULL;
     }
     return table;
 }

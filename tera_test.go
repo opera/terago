@@ -137,3 +137,23 @@ func TestTeraBatch(*testing.T) {
 	}
 	logExecTime(start, "RangeGet2")
 }
+
+func TestOpenFailed(*testing.T) {
+	fmt.Println("Hello terago!")
+	start := time.Now()
+	client, err := NewClient("tera.flag", "terago")
+	defer client.Close()
+	if err != nil {
+		panic("tera.NewClient error: " + err.Error())
+	}
+	logExecTime(start, "NewClient")
+
+	start = time.Now()
+	kv, err := client.OpenKvStore("teragooo")
+	defer kv.Close()
+	if err == nil {
+		panic("tera.OpenKvStore should failed: ")
+	}
+	fmt.Printf("%v\n", err)
+	logExecTime(start, "OpenKvStore")
+}
