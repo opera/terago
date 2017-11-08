@@ -24,6 +24,10 @@ func (c Client) Close() {
 
 func (c Client) OpenKvStore(name string) (kv KvStore, err error) {
 	fmt.Println("open mock table: " + name)
-	kv = KvStore{Name: name, Data: make(map[string]string)}
+	if name == "terago" {
+		kv = KvStore{Name: name, Data: make(map[string]string)}
+	} else {
+		err = fmt.Errorf("table not exist: %s", name)
+	}
 	return
 }
