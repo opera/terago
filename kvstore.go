@@ -132,8 +132,11 @@ func (p KvStore) BatchGet(keys []string) (result []KeyValue, err error) {
 }
 
 func (p KvStore) RangeGet(start, end string, maxNum int) (result []KeyValue, err error) {
-	scanner := C.table_create_scanner(
-		p.CTable, C.CString(start), C.int(len(start)), C.CString(end), C.int(len(end)))
+	desc := C.tera_scan_descriptor(C.CString(start), C.uint64_t(len(start)))
+	C.tera_scan_descriptor_set_end(desc, C.CString(end), C.uint64_t(len(end)))
+	defer C.tera_scan_descriptor_destroy(desc)
+	scanner := C.tera_table_scan(p.CTable, desc, nil)
+	defer C.tera_result_stream_destroy(scanner)
 	for i := 0; i < maxNum; i++ {
 		if C.tera_result_stream_done(scanner, nil) {
 			break

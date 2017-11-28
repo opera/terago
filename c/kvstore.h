@@ -17,6 +17,7 @@ void put_callback(void* mu) {
     if (err != 0) {
         fprintf(stderr, "tera put kv error: %d.\n", (int)err);
     }
+    tera_row_mutation_destroy(mu);
 }
 
 void table_put_kv_async(tera_table_t* table, const char* key, int keylen,
@@ -49,13 +50,6 @@ bool table_delete_kv_sync(tera_table_t* table, const char* key, int keylen) {
         fprintf(stderr, "tera delete error.\n");
     }
     return ret;
-}
-
-tera_result_stream_t* table_create_scanner(tera_table_t* table, const char* start, int startlen, 
-                                           const char* end, int endlen) {
-    tera_scan_descriptor_t* desc = tera_scan_descriptor(start, startlen);
-    tera_scan_descriptor_set_end(desc, end, endlen);
-    return tera_table_scan(table, desc, NULL);
 }
 
 char* scanner_key(tera_result_stream_t* stream, int* keylen) {

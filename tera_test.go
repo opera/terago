@@ -91,6 +91,7 @@ func TestTeraBatch(*testing.T) {
 	}
 	logExecTime(start, "OpenKvStore")
 
+	//	for {
 	keys := []string{"t", "e", "r", "a", "go"}
 	values := []string{"tt", "ee", "rr", "aa", "gogo"}
 	start = time.Now()
@@ -136,6 +137,7 @@ func TestTeraBatch(*testing.T) {
 		panic(e)
 	}
 	logExecTime(start, "RangeGet2")
+	//	}
 }
 
 func TestOpenFailed(*testing.T) {
