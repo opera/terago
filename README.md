@@ -1,5 +1,7 @@
 # terago
-Golang client for [baidu/tera](https://github.com/baidu/tera)
+Golang sdk for [baidu/tera](https://github.com/baidu/tera)
+
+Now we only support key-value interfaces. 
 
 ## Run unit test
 
