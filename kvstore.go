@@ -32,8 +32,13 @@ func (p KvStore) Put(key, value string, ttl int) (err error) {
 	if p.CTable == nil {
 		return errors.New("table not open: " + p.Name)
 	}
-	ret := C.table_put_kv_sync(p.CTable, C.CString(key), C.int(len(key)),
-		C.CString(value), C.int(len(value)), C.int(ttl))
+	ckey := C.CString(key)
+	defer C.free(unsafe.Pointer(ckey))
+	cvalue := C.CString(value)
+	defer C.free(unsafe.Pointer(cvalue))
+	ckeylen := C.uint64_t(len(key))
+	cvallen := C.uint64_t(len(value))
+	ret := C.tera_table_put_kv(p.CTable, ckey, ckeylen, cvalue, cvallen, C.int32_t(ttl), nil)
 	if !ret {
 		err = errors.New("put kv error")
 	}
@@ -56,11 +61,13 @@ func (p KvStore) Get(key string) (value string, err error) {
 		err = errors.New("table not open: " + p.Name)
 		return
 	}
+	ckey := C.CString(key)
+	defer C.free(unsafe.Pointer(ckey))
 	var vallen C.int
-	vc := C.table_get_kv_sync(p.CTable, C.CString(key), C.int(len(key)), (*C.int)(&vallen))
+	cvalue := C.table_get_kv_sync(p.CTable, ckey, C.int(len(key)), (*C.int)(&vallen))
 	if vallen >= 0 {
-		value = C.GoStringN(vc, vallen)
-		C.free(unsafe.Pointer(vc))
+		value = C.GoStringN(cvalue, vallen)
+		C.free(unsafe.Pointer(cvalue))
 	} else {
 		err = errors.New("key not found")
 		value = ""
@@ -132,8 +139,12 @@ func (p KvStore) BatchGet(keys []string) (result []KeyValue, err error) {
 }
 
 func (p KvStore) RangeGet(start, end string, maxNum int) (result []KeyValue, err error) {
-	desc := C.tera_scan_descriptor(C.CString(start), C.uint64_t(len(start)))
-	C.tera_scan_descriptor_set_end(desc, C.CString(end), C.uint64_t(len(end)))
+	cstart := C.CString(start)
+	defer C.free(unsafe.Pointer(cstart))
+	cend := C.CString(end)
+	defer C.free(unsafe.Pointer(cend))
+	desc := C.tera_scan_descriptor(cstart, C.uint64_t(len(start)))
+	C.tera_scan_descriptor_set_end(desc, cend, C.uint64_t(len(end)))
 	defer C.tera_scan_descriptor_destroy(desc)
 	scanner := C.tera_table_scan(p.CTable, desc, nil)
 	defer C.tera_result_stream_destroy(scanner)
@@ -159,7 +170,9 @@ func (p KvStore) Delete(key string) (err error) {
 	if p.CTable == nil {
 		return errors.New("table not open: " + p.Name)
 	}
-	ret := C.table_delete_kv_sync(p.CTable, C.CString(key), C.int(len(key)))
+	ckey := C.CString(key)
+	defer C.free(unsafe.Pointer(ckey))
+	ret := C.table_delete_kv_sync(p.CTable, ckey, C.int(len(key)))
 	if !ret {
 		err = errors.New("put kv error")
 	}

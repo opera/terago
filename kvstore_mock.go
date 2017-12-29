@@ -6,11 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"sync"
 )
 
 type KvStore struct {
 	Name string
 	Data map[string]string
+	Mu   sync.Mutex
 }
 
 func (p KvStore) Close() {
@@ -19,7 +21,9 @@ func (p KvStore) Close() {
 
 // discard ttl in mock table
 func (p KvStore) Put(key, value string, ttl int) (err error) {
+	p.Mu.Lock()
 	p.Data[key] = value
+	p.Mu.Unlock()
 	return nil
 }
 
