@@ -1,4 +1,4 @@
-// +build prod
+// +build !mock
 
 package terago
 
