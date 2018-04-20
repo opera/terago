@@ -18,7 +18,7 @@ struct KeyValue {
   4: i64    ttl,   // ttl only take effect on Put&BatchPut operation
 }
 
-service TeraProxy {
+service Proxy {
   KeyValue       Get(1:string table, 2:string key)
   Status         Put(1:string table, 2:KeyValue kv)
   list<KeyValue> BatchGet(1:string table, 2:list<string> keys)

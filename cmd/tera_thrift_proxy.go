@@ -1,56 +1,91 @@
 package main
 
 import (
-	"fmt"
+	"errors"
+	"git.apache.org/thrift.git/lib/go/thrift"
 	"github.com/opera/terago"
 	"github.com/opera/terago/thrift/tera"
+	"log"
 )
 
 type Handler struct {
-	client *terago.Client
-	tables map[string]*terago.KvStore
+	client   *terago.Client
+	kvStores map[string]*terago.KvStore
+}
+
+func (p *Handler) getTable(name string) *terago.KvStore {
+	if kv, ok := p.kvStores[name]; ok {
+		return kv
+	}
+
+	kv, e := p.client.OpenKvStore(name)
+	if e != nil {
+		return nil
+	}
+	p.kvStores[name] = &kv
+	return &kv
+}
+
+func (p *Handler) Get(table string, key string) (r *tera.KeyValue, err error) {
+	kvStore := p.getTable(table)
+	if kvStore == nil {
+		return &tera.KeyValue{Key: key, Status: tera.Status_TableNotExist}, errors.New("table not exist")
+	}
+	value, e := kvStore.Get(key)
+	if e == nil {
+		r = &tera.KeyValue{Key: key, Value: value, Status: tera.Status_Ok}
+	} else {
+		r = &tera.KeyValue{Key: key, Status: tera.Status_NotFound}
+	}
+	return
+}
+
+func (p *Handler) Put(table string, kv *tera.KeyValue) (r tera.Status, err error) {
+	kvStore := p.getTable(table)
+	if kvStore == nil {
+		return tera.Status_TableNotExist, errors.New("table not exist")
+	}
+	if kv.TTL == 0 {
+		kv.TTL = -1
+	}
+	e := kvStore.Put(kv.Key, kv.Value, int(kv.TTL))
+	if e != nil {
+		log.Println(e)
+	}
+	return tera.Status_Ok, nil
+}
+
+func (p *Handler) BatchGet(table string, keys []string) (r []*tera.KeyValue, err error) {
+	return
+}
+
+func (p *Handler) BatchPut(table string, kvs []*tera.KeyValue) (r []tera.Status, err error) {
+	return
 }
 
 func main() {
-	fmt.Println("Hello terago!")
+	log.Println("Hello terago!")
 
 	// New a tera client
 	// One client support multiple kvstore
-	client, c_err := terago.NewClient("tera.flag", "terago")
+	client, err := terago.NewClient("tera.flag", "terago")
 	defer client.Close() // Donot forget
-	if c_err != nil {
-		panic("tera.NewClient error: " + c_err.Error())
+	if err != nil {
+		panic(err)
 	}
-
-	// Open a tera kvstore.
-	// One kvstore can be used in many goroutines.
-	kv, t_err := client.OpenKvStore("terago")
-	defer kv.Close() // Donot forget
-	if t_err != nil {
-		panic("tera.OpenTable error: " + t_err.Error())
+	handler := Handler{
+		client:   &client,
+		kvStores: make(map[string]*terago.KvStore),
 	}
-
-	// Put a key-value synchronously.
-	p_err := kv.Put("hello", "terago", 10)
-	if p_err != nil {
-		panic("put key value error: " + p_err.Error())
+	addr := ":8118"
+	processor := tera.NewProxyProcessor(&handler)
+	transportFactory := thrift.NewTTransportFactory()
+	protocolFactory := thrift.NewTBinaryProtocolFactoryDefault()
+	trans, err := thrift.NewTServerSocket(addr)
+	if err != nil {
+		panic(err)
 	}
-
-	p_err = kv.PutAsync("helloasync", "terago", 10)
-	if p_err != nil {
-		panic("put key value async error: " + p_err.Error())
-	}
-
-	// Get a key-value synchronously.
-	value, g_err := kv.Get("hello")
-	if g_err != nil {
-		panic("get key value error: " + g_err.Error())
-	}
-	fmt.Printf("Get: hello:%s.\n", value)
-
-	// Delete a key-value synchronously.
-	d_err := kv.Delete("hello")
-	if d_err != nil {
-		panic("delete key value error: " + d_err.Error())
-	}
+	server := thrift.NewTSimpleServer4(processor, trans, transportFactory, protocolFactory)
+	log.Printf("Tera proxy start serving on %s ...", addr)
+	server.Serve()
 }
