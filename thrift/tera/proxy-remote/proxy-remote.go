@@ -20,8 +20,8 @@ func Usage() {
 	fmt.Fprintln(os.Stderr, "Usage of ", os.Args[0], " [-h host:port] [-u url] [-f[ramed]] function [arg1 [arg2...]]:")
 	flag.PrintDefaults()
 	fmt.Fprintln(os.Stderr, "\nFunctions:")
-	fmt.Fprintln(os.Stderr, "  KeyValue Get(string table, string key)")
-	fmt.Fprintln(os.Stderr, "  Status Put(string table, KeyValue kv)")
+	fmt.Fprintln(os.Stderr, "  string Get(string table, string key)")
+	fmt.Fprintln(os.Stderr, "  Status Put(string table, string key, string value)")
 	fmt.Fprintln(os.Stderr, "   BatchGet(string table,  keys)")
 	fmt.Fprintln(os.Stderr, "   BatchPut(string table,  kvs)")
 	fmt.Fprintln(os.Stderr)
@@ -131,30 +131,17 @@ func main() {
 		fmt.Print("\n")
 		break
 	case "Put":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "Put requires 2 args")
+		if flag.NArg()-1 != 3 {
+			fmt.Fprintln(os.Stderr, "Put requires 3 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		arg17 := flag.Arg(2)
-		mbTrans18 := thrift.NewTMemoryBufferLen(len(arg17))
-		defer mbTrans18.Close()
-		_, err19 := mbTrans18.WriteString(arg17)
-		if err19 != nil {
-			Usage()
-			return
-		}
-		factory20 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt21 := factory20.GetProtocol(mbTrans18)
-		argvalue1 := tera.NewKeyValue()
-		err22 := argvalue1.Read(jsProt21)
-		if err22 != nil {
-			Usage()
-			return
-		}
+		argvalue1 := flag.Arg(2)
 		value1 := argvalue1
-		fmt.Print(client.Put(value0, value1))
+		argvalue2 := flag.Arg(3)
+		value2 := argvalue2
+		fmt.Print(client.Put(value0, value1, value2))
 		fmt.Print("\n")
 		break
 	case "BatchGet":
@@ -164,19 +151,19 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		arg24 := flag.Arg(2)
-		mbTrans25 := thrift.NewTMemoryBufferLen(len(arg24))
-		defer mbTrans25.Close()
-		_, err26 := mbTrans25.WriteString(arg24)
-		if err26 != nil {
+		arg20 := flag.Arg(2)
+		mbTrans21 := thrift.NewTMemoryBufferLen(len(arg20))
+		defer mbTrans21.Close()
+		_, err22 := mbTrans21.WriteString(arg20)
+		if err22 != nil {
 			Usage()
 			return
 		}
-		factory27 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt28 := factory27.GetProtocol(mbTrans25)
+		factory23 := thrift.NewTSimpleJSONProtocolFactory()
+		jsProt24 := factory23.GetProtocol(mbTrans21)
 		containerStruct1 := tera.NewProxyBatchGetArgs()
-		err29 := containerStruct1.ReadField2(jsProt28)
-		if err29 != nil {
+		err25 := containerStruct1.ReadField2(jsProt24)
+		if err25 != nil {
 			Usage()
 			return
 		}
@@ -192,19 +179,19 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		arg31 := flag.Arg(2)
-		mbTrans32 := thrift.NewTMemoryBufferLen(len(arg31))
-		defer mbTrans32.Close()
-		_, err33 := mbTrans32.WriteString(arg31)
-		if err33 != nil {
+		arg27 := flag.Arg(2)
+		mbTrans28 := thrift.NewTMemoryBufferLen(len(arg27))
+		defer mbTrans28.Close()
+		_, err29 := mbTrans28.WriteString(arg27)
+		if err29 != nil {
 			Usage()
 			return
 		}
-		factory34 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt35 := factory34.GetProtocol(mbTrans32)
+		factory30 := thrift.NewTSimpleJSONProtocolFactory()
+		jsProt31 := factory30.GetProtocol(mbTrans28)
 		containerStruct1 := tera.NewProxyBatchPutArgs()
-		err36 := containerStruct1.ReadField2(jsProt35)
-		if err36 != nil {
+		err32 := containerStruct1.ReadField2(jsProt31)
+		if err32 != nil {
 			Usage()
 			return
 		}

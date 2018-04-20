@@ -19,8 +19,6 @@ struct KeyValue {
 }
 
 service Proxy {
-  KeyValue       Get(1:string table, 2:string key)
-  Status         Put(1:string table, 2:KeyValue kv)
-  list<KeyValue> BatchGet(1:string table, 2:list<string> keys)
-  list<Status>   BatchPut(1:string table, 2:list<KeyValue> kvs)
+  string         Get(1:string table, 2:string key),
+  Status         Put(1:string table, 2:string key, 3:string value),
 }

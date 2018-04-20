@@ -26,29 +26,20 @@ func (p *Handler) getTable(name string) *terago.KvStore {
 	return &kv
 }
 
-func (p *Handler) Get(table string, key string) (r *tera.KeyValue, err error) {
+func (p *Handler) Get(table string, key string) (r string, err error) {
 	kvStore := p.getTable(table)
 	if kvStore == nil {
-		return &tera.KeyValue{Key: key, Status: tera.Status_TableNotExist}, errors.New("table not exist")
+		return "", errors.New("table not exist")
 	}
-	value, e := kvStore.Get(key)
-	if e == nil {
-		r = &tera.KeyValue{Key: key, Value: value, Status: tera.Status_Ok}
-	} else {
-		r = &tera.KeyValue{Key: key, Status: tera.Status_NotFound}
-	}
-	return
+	return kvStore.Get(key)
 }
 
-func (p *Handler) Put(table string, kv *tera.KeyValue) (r tera.Status, err error) {
+func (p *Handler) Put(table, key, value string) (r tera.Status, err error) {
 	kvStore := p.getTable(table)
 	if kvStore == nil {
 		return tera.Status_TableNotExist, errors.New("table not exist")
 	}
-	if kv.TTL == 0 {
-		kv.TTL = -1
-	}
-	e := kvStore.Put(kv.Key, kv.Value, int(kv.TTL))
+	e := kvStore.Put(key, value, -1)
 	if e != nil {
 		log.Println(e)
 	}

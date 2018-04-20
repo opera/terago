@@ -18,11 +18,12 @@ type Proxy interface {
 	// Parameters:
 	//  - Table
 	//  - Key
-	Get(table string, key string) (r *KeyValue, err error)
+	Get(table string, key string) (r string, err error)
 	// Parameters:
 	//  - Table
-	//  - Kv
-	Put(table string, kv *KeyValue) (r Status, err error)
+	//  - Key
+	//  - Value
+	Put(table string, key string, value string) (r Status, err error)
 	// Parameters:
 	//  - Table
 	//  - Keys
@@ -62,7 +63,7 @@ func NewProxyClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot t
 // Parameters:
 //  - Table
 //  - Key
-func (p *ProxyClient) Get(table string, key string) (r *KeyValue, err error) {
+func (p *ProxyClient) Get(table string, key string) (r string, err error) {
 	if err = p.sendGet(table, key); err != nil {
 		return
 	}
@@ -92,7 +93,7 @@ func (p *ProxyClient) sendGet(table string, key string) (err error) {
 	return oprot.Flush()
 }
 
-func (p *ProxyClient) recvGet() (value *KeyValue, err error) {
+func (p *ProxyClient) recvGet() (value string, err error) {
 	iprot := p.InputProtocol
 	if iprot == nil {
 		iprot = p.ProtocolFactory.GetProtocol(p.Transport)
@@ -140,15 +141,16 @@ func (p *ProxyClient) recvGet() (value *KeyValue, err error) {
 
 // Parameters:
 //  - Table
-//  - Kv
-func (p *ProxyClient) Put(table string, kv *KeyValue) (r Status, err error) {
-	if err = p.sendPut(table, kv); err != nil {
+//  - Key
+//  - Value
+func (p *ProxyClient) Put(table string, key string, value string) (r Status, err error) {
+	if err = p.sendPut(table, key, value); err != nil {
 		return
 	}
 	return p.recvPut()
 }
 
-func (p *ProxyClient) sendPut(table string, kv *KeyValue) (err error) {
+func (p *ProxyClient) sendPut(table string, key string, value string) (err error) {
 	oprot := p.OutputProtocol
 	if oprot == nil {
 		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
@@ -160,7 +162,8 @@ func (p *ProxyClient) sendPut(table string, kv *KeyValue) (err error) {
 	}
 	args := ProxyPutArgs{
 		Table: table,
-		Kv:    kv,
+		Key:   key,
+		Value: value,
 	}
 	if err = args.Write(oprot); err != nil {
 		return
@@ -440,7 +443,7 @@ func (p *proxyProcessorGet) Process(seqId int32, iprot, oprot thrift.TProtocol) 
 
 	iprot.ReadMessageEnd()
 	result := ProxyGetResult{}
-	var retval *KeyValue
+	var retval string
 	var err2 error
 	if retval, err2 = p.handler.Get(args.Table, args.Key); err2 != nil {
 		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing Get: "+err2.Error())
@@ -450,7 +453,7 @@ func (p *proxyProcessorGet) Process(seqId int32, iprot, oprot thrift.TProtocol) 
 		oprot.Flush()
 		return true, err2
 	} else {
-		result.Success = retval
+		result.Success = &retval
 	}
 	if err2 = oprot.WriteMessageBegin("Get", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -490,7 +493,7 @@ func (p *proxyProcessorPut) Process(seqId int32, iprot, oprot thrift.TProtocol) 
 	result := ProxyPutResult{}
 	var retval Status
 	var err2 error
-	if retval, err2 = p.handler.Put(args.Table, args.Kv); err2 != nil {
+	if retval, err2 = p.handler.Put(args.Table, args.Key, args.Value); err2 != nil {
 		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing Put: "+err2.Error())
 		oprot.WriteMessageBegin("Put", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
@@ -745,20 +748,20 @@ func (p *ProxyGetArgs) String() string {
 // Attributes:
 //  - Success
 type ProxyGetResult struct {
-	Success *KeyValue `thrift:"success,0" json:"success,omitempty"`
+	Success *string `thrift:"success,0" json:"success,omitempty"`
 }
 
 func NewProxyGetResult() *ProxyGetResult {
 	return &ProxyGetResult{}
 }
 
-var ProxyGetResult_Success_DEFAULT *KeyValue
+var ProxyGetResult_Success_DEFAULT string
 
-func (p *ProxyGetResult) GetSuccess() *KeyValue {
+func (p *ProxyGetResult) GetSuccess() string {
 	if !p.IsSetSuccess() {
 		return ProxyGetResult_Success_DEFAULT
 	}
-	return p.Success
+	return *p.Success
 }
 func (p *ProxyGetResult) IsSetSuccess() bool {
 	return p.Success != nil
@@ -798,9 +801,10 @@ func (p *ProxyGetResult) Read(iprot thrift.TProtocol) error {
 }
 
 func (p *ProxyGetResult) readField0(iprot thrift.TProtocol) error {
-	p.Success = &KeyValue{}
-	if err := p.Success.Read(iprot); err != nil {
-		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.Success), err)
+	if v, err := iprot.ReadString(); err != nil {
+		return thrift.PrependError("error reading field 0: ", err)
+	} else {
+		p.Success = &v
 	}
 	return nil
 }
@@ -823,11 +827,11 @@ func (p *ProxyGetResult) Write(oprot thrift.TProtocol) error {
 
 func (p *ProxyGetResult) writeField0(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSuccess() {
-		if err := oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+		if err := oprot.WriteFieldBegin("success", thrift.STRING, 0); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err)
 		}
-		if err := p.Success.Write(oprot); err != nil {
-			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.Success), err)
+		if err := oprot.WriteString(string(*p.Success)); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err)
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err)
@@ -845,10 +849,12 @@ func (p *ProxyGetResult) String() string {
 
 // Attributes:
 //  - Table
-//  - Kv
+//  - Key
+//  - Value
 type ProxyPutArgs struct {
-	Table string    `thrift:"table,1" json:"table"`
-	Kv    *KeyValue `thrift:"kv,2" json:"kv"`
+	Table string `thrift:"table,1" json:"table"`
+	Key   string `thrift:"key,2" json:"key"`
+	Value string `thrift:"value,3" json:"value"`
 }
 
 func NewProxyPutArgs() *ProxyPutArgs {
@@ -859,18 +865,13 @@ func (p *ProxyPutArgs) GetTable() string {
 	return p.Table
 }
 
-var ProxyPutArgs_Kv_DEFAULT *KeyValue
-
-func (p *ProxyPutArgs) GetKv() *KeyValue {
-	if !p.IsSetKv() {
-		return ProxyPutArgs_Kv_DEFAULT
-	}
-	return p.Kv
-}
-func (p *ProxyPutArgs) IsSetKv() bool {
-	return p.Kv != nil
+func (p *ProxyPutArgs) GetKey() string {
+	return p.Key
 }
 
+func (p *ProxyPutArgs) GetValue() string {
+	return p.Value
+}
 func (p *ProxyPutArgs) Read(iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
@@ -891,6 +892,10 @@ func (p *ProxyPutArgs) Read(iprot thrift.TProtocol) error {
 			}
 		case 2:
 			if err := p.readField2(iprot); err != nil {
+				return err
+			}
+		case 3:
+			if err := p.readField3(iprot); err != nil {
 				return err
 			}
 		default:
@@ -918,9 +923,19 @@ func (p *ProxyPutArgs) readField1(iprot thrift.TProtocol) error {
 }
 
 func (p *ProxyPutArgs) readField2(iprot thrift.TProtocol) error {
-	p.Kv = &KeyValue{}
-	if err := p.Kv.Read(iprot); err != nil {
-		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.Kv), err)
+	if v, err := iprot.ReadString(); err != nil {
+		return thrift.PrependError("error reading field 2: ", err)
+	} else {
+		p.Key = v
+	}
+	return nil
+}
+
+func (p *ProxyPutArgs) readField3(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return thrift.PrependError("error reading field 3: ", err)
+	} else {
+		p.Value = v
 	}
 	return nil
 }
@@ -933,6 +948,9 @@ func (p *ProxyPutArgs) Write(oprot thrift.TProtocol) error {
 		return err
 	}
 	if err := p.writeField2(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField3(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -958,14 +976,27 @@ func (p *ProxyPutArgs) writeField1(oprot thrift.TProtocol) (err error) {
 }
 
 func (p *ProxyPutArgs) writeField2(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("kv", thrift.STRUCT, 2); err != nil {
-		return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:kv: ", p), err)
+	if err := oprot.WriteFieldBegin("key", thrift.STRING, 2); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:key: ", p), err)
 	}
-	if err := p.Kv.Write(oprot); err != nil {
-		return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.Kv), err)
+	if err := oprot.WriteString(string(p.Key)); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T.key (2) field write error: ", p), err)
 	}
 	if err := oprot.WriteFieldEnd(); err != nil {
-		return thrift.PrependError(fmt.Sprintf("%T write field end error 2:kv: ", p), err)
+		return thrift.PrependError(fmt.Sprintf("%T write field end error 2:key: ", p), err)
+	}
+	return err
+}
+
+func (p *ProxyPutArgs) writeField3(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("value", thrift.STRING, 3); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:value: ", p), err)
+	}
+	if err := oprot.WriteString(string(p.Value)); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T.value (3) field write error: ", p), err)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field end error 3:value: ", p), err)
 	}
 	return err
 }
