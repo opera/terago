@@ -11,7 +11,7 @@ import (
 func AssertEmpty(ss ...string) {
 	for _, s := range ss {
 		if s == "" {
-			panic(ss)
+			log.Panicf("%v, %v", ss, s)
 		}
 	}
 }
